@@ -6,6 +6,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configValidationSchema } from './config.schema';
 import { EventsModule } from './events/events.module';
 import { Event } from './events/event.entity';
+import { RegistrationModule } from './registration/registration.module';
+import { Registration } from './registration/registration.entity';
+import { TeamModule } from './team/team.module';
+import { Team } from './team/team.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -18,7 +22,7 @@ import { Event } from './events/event.entity';
       useFactory: async (configService: ConfigService) => {
         return {
           type: 'postgres',
-          entities: [User, Event],
+          entities: [User, Event, Registration, Team],
           synchronize: true,
           host: configService.get('DB_HOST'),
           port: configService.get('DB_PORT'),
@@ -30,6 +34,8 @@ import { Event } from './events/event.entity';
     }),
     AuthModule,
     EventsModule,
+    RegistrationModule,
+    TeamModule,
   ],
 })
 export class AppModule {}
