@@ -10,6 +10,8 @@ import { RegistrationModule } from './registration/registration.module';
 import { Registration } from './registration/registration.entity';
 import { TeamModule } from './team/team.module';
 import { Team } from './team/team.entity';
+import { ScheduleModule } from './schedule/schedule.module';
+import { Schedule } from './schedule/schedule.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -22,7 +24,7 @@ import { Team } from './team/team.entity';
       useFactory: async (configService: ConfigService) => {
         return {
           type: 'postgres',
-          entities: [User, Event, Registration, Team],
+          entities: [User, Event, Registration, Team, Schedule],
           synchronize: true,
           host: configService.get('DB_HOST'),
           port: configService.get('DB_PORT'),
@@ -36,6 +38,7 @@ import { Team } from './team/team.entity';
     EventsModule,
     RegistrationModule,
     TeamModule,
+    ScheduleModule,
   ],
 })
 export class AppModule {}

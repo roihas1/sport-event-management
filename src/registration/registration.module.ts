@@ -16,5 +16,6 @@ import { TeamModule } from 'src/team/team.module';
   ],
   controllers: [RegistrationController],
   providers: [RegistrationService, RegistrationRepository],
+  exports: [RegistrationService],
 })
 export class RegistrationModule {}

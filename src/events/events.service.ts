@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventsRepository } from './events.repository';
 import { User } from 'src/auth/user.entity';
@@ -8,6 +8,7 @@ import { UpdateEventStatusDto } from './dto/update-event-status.dto';
 
 @Injectable()
 export class EventsService {
+  private logger = new Logger('EventsService');
   constructor(
     @InjectRepository(EventsRepository)
     private eventsRepository: EventsRepository,
@@ -25,6 +26,9 @@ export class EventsService {
       where: { id, createdBy: user },
     });
     if (!found) {
+      this.logger.error(
+        `Event with ID "${id}" not found for user "${user.username}".`,
+      );
       throw new NotFoundException(`Event with ID "${id}" not found`);
     }
     return found;
@@ -33,8 +37,14 @@ export class EventsService {
   async deleteEventById(id: string, user: User): Promise<void> {
     const result = await this.eventsRepository.deleteEvent(id, user);
     if (result.affected == 0) {
+      this.logger.error(
+        `Failed to delete event with ID "${id}" for user "${user.username}." Not found.`,
+      );
       throw new NotFoundException(`Event with ID "${id}" not found`);
     }
+    this.logger.log(
+      `Event with ID "${id}" deleted by user "${user.username}".`,
+    );
   }
   async updateEventStatus(
     id: string,
@@ -48,7 +58,13 @@ export class EventsService {
       user,
     );
     if (result.affected == 0) {
+      this.logger.error(
+        `Failed to update status for event with ID "${id}" for user "${user.username}".`,
+      );
       throw new NotFoundException(`Event with ID "${id}" not found`);
     }
+    this.logger.log(
+      `Status of event with ID "${id}" updated to "${status}" by user "${user.username}".`,
+    );
   }
 }

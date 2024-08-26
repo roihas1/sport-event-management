@@ -24,13 +24,9 @@ export class Registration {
   @ManyToOne(() => Event, { nullable: false })
   @JoinColumn({ name: 'eventId' })
   event: Event;
+
   @ManyToOne(() => Team, { eager: true })
   team: Team;
-  //   @Column({ unique: true, nullable: true })
-  //   teamName?: string;
-
-  //   @Column('simple-array', { nullable: true })
-  //   members?: string[];
 
   @Column()
   status: string;

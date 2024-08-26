@@ -41,6 +41,7 @@ export class RegistrationRepository extends Repository<Registration> {
 
   async getRegistrations(eventId: string, user: User): Promise<Registration[]> {
     const query = this.createQueryBuilder('registration');
+    query.leftJoinAndSelect('registration.team', 'team');
     query.where({ user });
     query.andWhere({ event: eventId });
     try {

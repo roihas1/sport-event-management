@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -13,6 +14,7 @@ import { Role } from './user-role.enum';
 
 @Injectable()
 export class AuthService {
+  private logger = new Logger('AuthService', { timestamp: true });
   constructor(
     @InjectRepository(UsersRepository)
     private usersRepository: UsersRepository,
@@ -20,7 +22,18 @@ export class AuthService {
   ) {}
 
   async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
-    return this.usersRepository.createUser(authCredentialsDto);
+    try {
+      await this.usersRepository.createUser(authCredentialsDto);
+      this.logger.verbose(
+        `User "${authCredentialsDto.username}" signed up successfully.`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to sign up user "${authCredentialsDto.username}".`,
+        error.stack,
+      );
+      throw error;
+    }
   }
 
   async signIn(
@@ -32,16 +45,35 @@ export class AuthService {
     if (user && (await bcrypt.compare(password, user.password))) {
       const payload: JwtPayload = { username };
       const accessToken = await this.jwtService.sign(payload);
+      this.logger.verbose(
+        `User "${username}" signed in successfully and access token generated.`,
+      );
       return { accessToken };
     } else {
+      this.logger.warn(
+        `Sign-in failed for user "${username}" due to incorrect credentials.`,
+      );
       throw new UnauthorizedException('Please check your credentials');
     }
   }
   async updateUserRole(id: string, role: Role): Promise<void> {
-    const result = await this.usersRepository.updateUserRole(id, role);
-
-    if (result.affected == 0) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+    try {
+      const result = await this.usersRepository.updateUserRole(id, role);
+      if (result.affected === 0) {
+        this.logger.warn(
+          `Failed to update role for user with ID: "${id}". User not found.`,
+        );
+        throw new NotFoundException(`User with ID ${id} not found`);
+      }
+      this.logger.verbose(
+        `User with ID: "${id}" role updated to "${role}" successfully.`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error occurred while updating role for user with ID: "${id}" to "${role}".`,
+        error.stack,
+      );
+      throw error;
     }
   }
 }

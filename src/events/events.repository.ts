@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { DataSource, DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { Event } from './event.entity';
 import { User } from 'src/auth/user.entity';
@@ -7,6 +11,7 @@ import { eventStatus } from './event-status.enum';
 
 @Injectable()
 export class EventsRepository extends Repository<Event> {
+  private logger = new Logger('Eventsrepository', { timestamp: true });
   constructor(dataSource: DataSource) {
     super(Event, dataSource.createEntityManager());
   }
@@ -17,6 +22,10 @@ export class EventsRepository extends Repository<Event> {
       const events = await query.getMany();
       return events;
     } catch (error) {
+      this.logger.error(
+        `Failed to get events for user "${user.username}".`,
+        error.stack,
+      );
       throw new InternalServerErrorException();
     }
   }
@@ -44,8 +53,19 @@ export class EventsRepository extends Repository<Event> {
       registrationDeadline,
       createdBy: user,
     });
-
-    return await this.save(event);
+    try {
+      const savedEvent = await this.save(event);
+      this.logger.verbose(
+        `Event "${savedEvent.eventName}" created successfully by user "${user.username}".`,
+      );
+      return savedEvent;
+    } catch (error) {
+      this.logger.error(
+        `Failed to create event for user "${user.username}".`,
+        error.stack,
+      ); // Log error with stack trace
+      throw new InternalServerErrorException();
+    }
   }
   async deleteEvent(id: string, user: User): Promise<DeleteResult> {
     return await this.delete({ id, createdBy: user });

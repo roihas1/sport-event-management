@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { Repository, DataSource } from 'typeorm';
 import { Team } from './team.entity';
@@ -29,5 +30,32 @@ export class TeamRepository extends Repository<Team> {
         throw new InternalServerErrorException();
       }
     }
+  }
+  async addMember(teamName: string, member: string, user: User): Promise<void> {
+    const team = await this.findOne({ where: { teamName, user } });
+
+    if (!team) {
+      throw new NotFoundException(`Team named: ${teamName} not found.`);
+    }
+    team.members.push(member);
+    await this.save(team);
+  }
+  async deleteMember(
+    teamName: string,
+    member: string,
+    user: User,
+  ): Promise<void> {
+    const team = await this.findOne({ where: { teamName, user } });
+    if (!team) {
+      throw new NotFoundException(`Team named: ${teamName} not found.`);
+    }
+    const memberIndex = team.members.indexOf(member);
+    if (memberIndex === -1) {
+      throw new NotFoundException(
+        `Member named: "${member}" not found in team "${teamName}".`,
+      );
+    }
+    team.members.splice(memberIndex, 1);
+    await this.save(team);
   }
 }
