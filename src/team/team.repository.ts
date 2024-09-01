@@ -7,7 +7,7 @@ import {
 import { Repository, DataSource } from 'typeorm';
 import { Team } from './team.entity';
 import { CreateTeamDto } from './dto/create-team.dto';
-import { User } from 'src/auth/user.entity';
+import { User } from '../auth/user.entity';
 
 @Injectable()
 export class TeamRepository extends Repository<Team> {
@@ -57,5 +57,15 @@ export class TeamRepository extends Repository<Team> {
     }
     team.members.splice(memberIndex, 1);
     await this.save(team);
+  }
+  async getUserAllTeams(user: User): Promise<Team[]> {
+    const query = this.createQueryBuilder('team');
+    query.where('team.userId = :userId', { userId: user.id });
+    try {
+      const teams = await query.getMany();
+      return teams;
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 }

@@ -1,4 +1,3 @@
-// src/registration/registration.repository.ts
 import { DataSource, Repository } from 'typeorm';
 import { Registration } from './registration.entity';
 import {
@@ -6,9 +5,9 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { Event } from 'src/events/event.entity';
-import { User } from 'src/auth/user.entity';
-import { Team } from 'src/team/team.entity';
+import { Event } from '../events/event.entity';
+import { User } from '../auth/user.entity';
+import { Team } from '../team/team.entity';
 
 @Injectable()
 export class RegistrationRepository extends Repository<Registration> {
@@ -47,6 +46,18 @@ export class RegistrationRepository extends Repository<Registration> {
     try {
       const registrations = await query.getMany();
       return registrations;
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+  }
+  async getAllEventsUserRegitered(user: User): Promise<Registration[]> {
+    const query = this.createQueryBuilder('registration');
+    query.leftJoinAndSelect('registration.event', 'event');
+    query.leftJoinAndSelect('registration.team', 'team');
+    query.where('registration.userId = :userId', { userId: user.id });
+    try {
+      const events = await query.getMany();
+      return events;
     } catch (error) {
       throw new InternalServerErrorException();
     }

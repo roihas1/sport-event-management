@@ -3,7 +3,7 @@ import { TeamController } from './team.controller';
 import { TeamService } from './team.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TeamRepository } from './team.repository';
-import { AuthModule } from 'src/auth/auth.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([TeamRepository]), AuthModule],

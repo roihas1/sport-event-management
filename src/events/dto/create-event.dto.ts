@@ -1,11 +1,21 @@
-import { IsString, IsDateString, IsNumber, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsDateString,
+  IsNumber,
+  IsOptional,
+  IsEnum,
+} from 'class-validator';
+import { SportType } from '../sport-types.enum';
 
 export class CreateEventDto {
   @IsString()
   eventName: string;
 
   @IsString()
-  sportType: string;
+  description: string;
+
+  @IsEnum(SportType)
+  sportType: SportType;
 
   @IsDateString()
   date: string;

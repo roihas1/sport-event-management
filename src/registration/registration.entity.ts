@@ -6,10 +6,10 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { User } from 'src/auth/user.entity';
-import { Event } from 'src/events/event.entity';
+import { User } from '../auth/user.entity';
+import { Event } from '../events/event.entity';
 import { Exclude } from 'class-transformer';
-import { Team } from 'src/team/team.entity';
+import { Team } from '../team/team.entity';
 
 @Entity()
 export class Registration {

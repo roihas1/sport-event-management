@@ -1,6 +1,6 @@
 // schedule.entity.ts
-import { Team } from 'src/team/team.entity';
-import { Event } from 'src/events/event.entity';
+import { Team } from '../team/team.entity';
+import { Event } from '../events/event.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,

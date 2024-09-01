@@ -1,4 +1,5 @@
 import {
+  IsDateString,
   IsEnum,
   IsOptional,
   IsString,
@@ -25,4 +26,13 @@ export class AuthCredentialsDto {
   @IsOptional()
   @IsEnum(Role)
   role: Role;
+
+  @IsString()
+  fullName: string;
+
+  @IsDateString()
+  dateOfBirth: string;
+
+  @IsString()
+  phoneNumber: string;
 }

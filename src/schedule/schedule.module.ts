@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ScheduleController } from './schedule.controller';
 import { ScheduleService } from './schedule.service';
-import { AuthModule } from 'src/auth/auth.module';
-import { EventsModule } from 'src/events/events.module';
-import { TeamModule } from 'src/team/team.module';
+import { AuthModule } from '../auth/auth.module';
+import { EventsModule } from '../events/events.module';
+import { TeamModule } from '../team/team.module';
 import { ScheduleRepository } from './schedule.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RegistrationModule } from 'src/registration/registration.module';
+import { RegistrationModule } from '../registration/registration.module';
 
 @Module({
   imports: [

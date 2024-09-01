@@ -16,7 +16,8 @@ export class UsersRepository extends Repository<User> {
     super(User, dataSource.createEntityManager());
   }
   async createUser(authCredentialsDto: AuthCredentialsDto): Promise<void> {
-    const { username, password, role } = authCredentialsDto;
+    const { username, password, role, fullName, dateOfBirth, phoneNumber } =
+      authCredentialsDto;
 
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -24,6 +25,9 @@ export class UsersRepository extends Repository<User> {
       username,
       password: hashedPassword,
       role: role,
+      fullName,
+      dateOfBirth,
+      phoneNumber,
     });
     try {
       await this.save(user);

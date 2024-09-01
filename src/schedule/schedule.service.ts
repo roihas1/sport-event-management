@@ -5,12 +5,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EventsService } from 'src/events/events.service';
-import { TeamService } from 'src/team/team.service';
+import { EventsService } from '../events/events.service';
+import { TeamService } from '../team/team.service';
 import { ScheduleRepository } from './schedule.repository';
-import { RegistrationService } from 'src/registration/registration.service';
-import { User } from 'src/auth/user.entity';
-import { Team } from 'src/team/team.entity';
+import { RegistrationService } from '../registration/registration.service';
+import { User } from '../auth/user.entity';
+import { Team } from '../team/team.entity';
 import { Schedule } from './schedule.entity';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateMatchScoreDto } from './dto/update-match-score.dto';
@@ -37,6 +37,9 @@ export class ScheduleService {
         eventId,
         user,
       );
+      if (registrations.length < 2) {
+        return;
+      }
       const teams = registrations.map((reg) => reg.team);
       const numberOfTeams = teams.length;
       const nextPowerOfTwo = Math.pow(2, Math.ceil(Math.log2(numberOfTeams)));
@@ -140,5 +143,9 @@ export class ScheduleService {
     } else {
       return null;
     }
+  }
+
+  getAllGamesOfEvent(eventId: string): Promise<Schedule[]> {
+    return this.scheduleRepository.getAllGamesOfEvent(eventId);
   }
 }

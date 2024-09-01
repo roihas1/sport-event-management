@@ -11,9 +11,9 @@ import {
 } from '@nestjs/common';
 import { TeamService } from './team.service';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/auth/roles.guard';
-import { GetUser } from 'src/auth/get-user.decorator';
-import { User } from 'src/auth/user.entity';
+import { RolesGuard } from '../auth/roles.guard';
+import { GetUser } from '../auth/get-user.decorator';
+import { User } from '../auth/user.entity';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { Team } from './team.entity';
 import { AddMemberDto } from './dto/add-member.dto';
@@ -33,6 +33,11 @@ export class TeamController {
       `User "${user.username}" creating team with name: "${createTeamDto.teamName}"`,
     );
     return this.teamService.createTeam(createTeamDto, user);
+  }
+  @Get()
+  getUserAllTeams(@GetUser() user: User): Promise<Team[]> {
+    this.logger.verbose(`User "${user.username}" tring to get all his teams"`);
+    return this.teamService.getUserAllTeams(user);
   }
   @Get('/:name')
   getTeamByName(

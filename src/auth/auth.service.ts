@@ -11,6 +11,8 @@ import { JwtPayload } from './jwt-payload.interface';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm/dist/common';
 import { Role } from './user-role.enum';
+import { LoginDto } from './dto/login.dto';
+import { User } from './user.entity';
 
 @Injectable()
 export class AuthService {
@@ -36,26 +38,38 @@ export class AuthService {
     }
   }
 
-  async signIn(
-    authCredentialsDto: AuthCredentialsDto,
-  ): Promise<{ accessToken: string }> {
+  async signIn(authCredentialsDto: LoginDto): Promise<{ accessToken: string }> {
     const { username, password } = authCredentialsDto;
+
     const user = await this.usersRepository.findOne({ where: { username } });
 
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const payload: JwtPayload = { username };
-      const accessToken = await this.jwtService.sign(payload);
-      this.logger.verbose(
-        `User "${username}" signed in successfully and access token generated.`,
-      );
-      return { accessToken };
-    } else {
+    if (!user) {
+      this.logger.error(`User "${username}" not found.`);
+      throw new NotFoundException(`User "${username}" not found.`);
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
       this.logger.warn(
         `Sign-in failed for user "${username}" due to incorrect credentials.`,
       );
-      throw new UnauthorizedException('Please check your credentials');
+      throw new UnauthorizedException('Invalid credentials');
     }
+
+    user.isActive = true;
+    await this.usersRepository.save(user);
+
+    const payload: JwtPayload = { username };
+    const accessToken = this.jwtService.sign(payload);
+
+    this.logger.verbose(
+      `User "${username}" signed in successfully and access token generated.`,
+    );
+
+    return { accessToken };
   }
+
   async updateUserRole(id: string, role: Role): Promise<void> {
     try {
       const result = await this.usersRepository.updateUserRole(id, role);
@@ -74,6 +88,18 @@ export class AuthService {
         error.stack,
       );
       throw error;
+    }
+  }
+  async logout(user: User): Promise<void> {
+    try {
+      const found = await this.usersRepository.findOne({
+        where: { username: user.username },
+      });
+      found.isActive = false;
+      await this.usersRepository.save(found);
+      this.logger.verbose(`User "${user.username}" logout.`);
+    } catch (error) {
+      throw new NotFoundException(`User ${user.username} not found.`);
     }
   }
 }

@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { TeamRepository } from './team.repository';
 import { CreateTeamDto } from './dto/create-team.dto';
-import { User } from 'src/auth/user.entity';
+import { User } from '../auth/user.entity';
 import { Team } from './team.entity';
 import { QueryFailedError } from 'typeorm';
 
@@ -93,6 +93,9 @@ export class TeamService {
       );
       throw error;
     }
+  }
+  async getUserAllTeams(user: User): Promise<Team[]> {
+    return await this.teamRepository.getUserAllTeams(user);
   }
   async deleteTeam(teamName: string, user: User): Promise<void> {
     try {

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Logger,
   Param,
   Patch,
@@ -8,12 +9,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/auth/roles.guard';
+import { RolesGuard } from '../auth/roles.guard';
 import { ScheduleService } from './schedule.service';
-import { GetUser } from 'src/auth/get-user.decorator';
-import { User } from 'src/auth/user.entity';
+import { GetUser } from '../auth/get-user.decorator';
+import { User } from '../auth/user.entity';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateMatchScoreDto } from './dto/update-match-score.dto';
+import { Schedule } from './schedule.entity';
 
 @Controller('schedule')
 @UseGuards(AuthGuard(), RolesGuard)
@@ -35,6 +37,17 @@ export class ScheduleController {
       createScheduleDto,
       user,
     );
+  }
+
+  @Get('games/:eventId')
+  getAllGamesOfEvent(
+    @Param('eventId') eventId: string,
+    @GetUser() user: User,
+  ): Promise<Schedule[]> {
+    this.logger.verbose(
+      `User "${user.username}" is retrieving all games for event with id:"${eventId}"`,
+    );
+    return this.scheduleService.getAllGamesOfEvent(eventId);
   }
 
   @Patch('update/:id/score')

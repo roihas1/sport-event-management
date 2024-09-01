@@ -1,8 +1,9 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { eventStatus } from './event-status.enum';
 import { IsOptional } from 'class-validator';
-import { User } from 'src/auth/user.entity';
+import { User } from '../auth/user.entity';
 import { Exclude } from 'class-transformer';
+import { SportType } from './sport-types.enum';
+import { eventStatus } from './event-status.enum';
 
 @Entity()
 export class Event {
@@ -12,8 +13,15 @@ export class Event {
   @Column()
   eventName: string;
 
-  @Column()
-  sportType: string;
+  @Column({ nullable: true })
+  eventDescription: string;
+
+  @Column({
+    type: 'enum',
+    enum: SportType,
+    nullable: true,
+  })
+  sportType: SportType;
 
   @Column({ type: 'date' })
   date: string;

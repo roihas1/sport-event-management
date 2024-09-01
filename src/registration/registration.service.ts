@@ -1,6 +1,8 @@
 // registration.service.ts
 import {
   ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -9,10 +11,10 @@ import { Registration } from './registration.entity';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
 
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/auth/user.entity';
-import { EventsService } from 'src/events/events.service';
+import { User } from '../auth/user.entity';
+import { EventsService } from '../events/events.service';
 import { RegistrationRepository } from './registration.repository';
-import { TeamService } from 'src/team/team.service';
+import { TeamService } from '../team/team.service';
 
 @Injectable()
 export class RegistrationService {
@@ -20,10 +22,17 @@ export class RegistrationService {
   constructor(
     @InjectRepository(RegistrationRepository)
     private readonly registrationRepository: RegistrationRepository,
+    @Inject(forwardRef(() => EventsService))
     private readonly eventsService: EventsService,
     private readonly teamService: TeamService,
   ) {}
-
+  async getNumOfTeams(eventId: string, user: User): Promise<number> {
+    const event = await this.eventsService.getEventById(eventId, user);
+    const currentParticipantsCount = await this.registrationRepository.count({
+      where: { event },
+    });
+    return currentParticipantsCount;
+  }
   async register(
     eventId: string,
     createRegistrationDto: CreateRegistrationDto,
@@ -63,7 +72,9 @@ export class RegistrationService {
       );
     }
   }
-
+  getAllEventsUserRegitered(user: User): Promise<Registration[]> {
+    return this.registrationRepository.getAllEventsUserRegitered(user);
+  }
   async getRegistrations(eventId: string, user: User): Promise<Registration[]> {
     try {
       const registrations = await this.registrationRepository.getRegistrations(

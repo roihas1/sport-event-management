@@ -12,10 +12,10 @@ import {
 import { RegistrationService } from './registration.service';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
 import { Registration } from './registration.entity';
-import { GetUser } from 'src/auth/get-user.decorator';
-import { User } from 'src/auth/user.entity';
+import { GetUser } from '../auth/get-user.decorator';
+import { User } from '../auth/user.entity';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/auth/roles.guard';
+import { RolesGuard } from '../auth/roles.guard';
 
 @Controller('events')
 @UseGuards(AuthGuard(), RolesGuard)
@@ -39,6 +39,16 @@ export class RegistrationController {
       createRegistrationDto,
       user,
     );
+  }
+  @Get('/:id/numOfTeams')
+  async getNumOfTeamRegistrated(
+    @Param('id') eventId: string,
+    @GetUser() user: User,
+  ): Promise<number> {
+    this.logger.verbose(
+      `User "${user.username}" is retrieving the number of teams already register to the event: "${eventId}"`,
+    );
+    return await this.registrationService.getNumOfTeams(eventId, user);
   }
 
   @Get(':id/registrations')

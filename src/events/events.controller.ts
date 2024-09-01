@@ -9,14 +9,15 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
-import { GetUser } from 'src/auth/get-user.decorator';
+import { GetUser } from '../auth/get-user.decorator';
 import { Event } from './event.entity';
-import { User } from 'src/auth/user.entity';
+import { User } from '../auth/user.entity';
 import { CreateEventDto } from './dto/create-event.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/auth/roles.guard';
+import { RolesGuard } from '../auth/roles.guard';
 import { UpdateEventStatusDto } from './dto/update-event-status.dto';
 import { Logger } from '@nestjs/common';
+import { Registration } from '../registration/registration.entity';
 
 @Controller('events')
 @UseGuards(AuthGuard(), RolesGuard)
@@ -25,9 +26,14 @@ export class EventsController {
   constructor(private eventsService: EventsService) {}
 
   @Get()
-  getEvents(@GetUser() user: User): Promise<Event[]> {
-    this.logger.verbose(`User "${user.username}" retrieving all events.`);
-    return this.eventsService.getEvents(user);
+  async getEvents(@GetUser() user: User): Promise<Event[]> {
+    this.logger.verbose(`User "${user.username}" retrieving all his events.`);
+    return await this.eventsService.getEvents(user);
+  }
+  @Get('/others')
+  async getOtherEvents(@GetUser() user: User): Promise<Event[]> {
+    this.logger.verbose(`User "${user.username}" retrieving all other events.`);
+    return await this.eventsService.getOtherEvents(user);
   }
 
   @Post()
@@ -69,5 +75,12 @@ export class EventsController {
       `User "${user.username}" updating status of event with id: ${id} to "${updateEventStatus.status}".`,
     );
     return this.eventsService.updateEventStatus(id, updateEventStatus, user);
+  }
+  @Get('/user/registeredEvents')
+  getAllEventsUserRegitered(@GetUser() user: User): Promise<Registration[]> {
+    this.logger.verbose(
+      `Fetching all events registered by user: ${user.username}`,
+    );
+    return this.eventsService.getAllEventsUserRegitered(user);
   }
 }

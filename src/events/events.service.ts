@@ -1,10 +1,12 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventsRepository } from './events.repository';
-import { User } from 'src/auth/user.entity';
+import { User } from '../auth/user.entity';
 import { Event } from './event.entity';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventStatusDto } from './dto/update-event-status.dto';
+import { RegistrationService } from '../registration/registration.service';
+import { Registration } from '../registration/registration.entity';
 
 @Injectable()
 export class EventsService {
@@ -12,9 +14,14 @@ export class EventsService {
   constructor(
     @InjectRepository(EventsRepository)
     private eventsRepository: EventsRepository,
+    private registrationService: RegistrationService,
   ) {}
   getEvents(user: User): Promise<Event[]> {
-    return this.eventsRepository.getEvents(user);
+    const result = this.eventsRepository.getEvents(user);
+    return result;
+  }
+  getOtherEvents(user: User): Promise<Event[]> {
+    return this.eventsRepository.getOtherEvents(user);
   }
   createEvent(createEventDto: CreateEventDto, user: User): Promise<Event> {
     const event = this.eventsRepository.createEvent(createEventDto, user);
@@ -23,7 +30,7 @@ export class EventsService {
 
   async getEventById(id: string, user: User): Promise<Event> {
     const found = await this.eventsRepository.findOne({
-      where: { id, createdBy: user },
+      where: { id },
     });
     if (!found) {
       this.logger.error(
@@ -32,6 +39,20 @@ export class EventsService {
       throw new NotFoundException(`Event with ID "${id}" not found`);
     }
     return found;
+  }
+  async getAllEventsUserRegitered(user: User): Promise<Registration[]> {
+    this.logger.log('Using RegistrationService to fetch user registrations...');
+    try {
+      const registrations =
+        await this.registrationService.getAllEventsUserRegitered(user);
+      // const events = registrations.map((reg) => reg.event);
+      return registrations;
+    } catch (error) {
+      this.logger.error(
+        `Error fetching events for user: ${user.id}, Error: ${error.message}`,
+      );
+      throw new Error('Could not fetch registered events');
+    }
   }
 
   async deleteEventById(id: string, user: User): Promise<void> {
