@@ -33,8 +33,12 @@ export class Schedule {
   @Column('simple-array', { nullable: true })
   score: number[];
 
-  //   @ManyToOne(() => User, { eager: true, nullable: false })
-  //   @JoinColumn({ name: 'userId' })
-  //   @Exclude({ toPlainOnly: true })
-  //   user: User;
+  @Column({ type: 'int', nullable: false, default: 0 })
+  round: number;
+
+  @Column({ type: 'int', nullable: false, default: 0 })
+  maxRounds: number;
+
+  @Column({ type: 'int', nullable: false, default: 0 })
+  matchNumber: number;
 }

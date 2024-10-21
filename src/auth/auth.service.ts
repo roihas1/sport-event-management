@@ -13,6 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm/dist/common';
 import { Role } from './user-role.enum';
 import { LoginDto } from './dto/login.dto';
 import { User } from './user.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +22,7 @@ export class AuthService {
     @InjectRepository(UsersRepository)
     private usersRepository: UsersRepository,
     private jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
@@ -38,7 +40,9 @@ export class AuthService {
     }
   }
 
-  async signIn(authCredentialsDto: LoginDto): Promise<{ accessToken: string }> {
+  async signIn(
+    authCredentialsDto: LoginDto,
+  ): Promise<{ accessToken: string; expiresIn: number }> {
     const { username, password } = authCredentialsDto;
 
     const user = await this.usersRepository.findOne({ where: { username } });
@@ -63,11 +67,14 @@ export class AuthService {
     const payload: JwtPayload = { username };
     const accessToken = this.jwtService.sign(payload);
 
+    const expiresIn = this.configService.get<number>('EXPIRE_IN') || 360;
+    console.log(expiresIn);
+
     this.logger.verbose(
       `User "${username}" signed in successfully and access token generated.`,
     );
 
-    return { accessToken };
+    return { accessToken, expiresIn };
   }
 
   async updateUserRole(id: string, role: Role): Promise<void> {

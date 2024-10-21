@@ -25,7 +25,7 @@ export class TeamRepository extends Repository<Team> {
       await this.save(team);
     } catch (error) {
       if (error.code == '23505') {
-        throw new ConflictException('team name already exist.');
+        throw new ConflictException(`Team name "${teamName}" already exist.`);
       } else {
         throw new InternalServerErrorException();
       }

@@ -29,7 +29,7 @@ export class TeamService {
         `Failed to create team with name: "${createTeamDto.teamName}" for user: "${user.username}".`,
         error.stack,
       );
-      throw error; // Re-throw to ensure proper error handling
+      throw error;
     }
   }
   async getTeamByName(teamName: string, user: User): Promise<Team> {

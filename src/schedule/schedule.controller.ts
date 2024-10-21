@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Logger,
   Param,
@@ -38,7 +39,12 @@ export class ScheduleController {
       user,
     );
   }
-
+  @Get('games/game/:id')
+  getMatch(@Param('id') matchId: string): Promise<Schedule> {
+    this.logger.verbose(`Try to get  match ID "${matchId}".`);
+    const foundMatch = this.scheduleService.getMatch(matchId);
+    return foundMatch;
+  }
   @Get('games/:eventId')
   getAllGamesOfEvent(
     @Param('eventId') eventId: string,
@@ -50,14 +56,32 @@ export class ScheduleController {
     return this.scheduleService.getAllGamesOfEvent(eventId);
   }
 
+  @Delete('games/:eventId')
+  deleteAllEventGames(
+    @Param('eventId') eventId: string,
+    @GetUser() user: User,
+  ): Promise<void> {
+    this.logger.verbose(
+      `User "${user.username}" is deleting all games for event with id:"${eventId}"`,
+    );
+    return this.scheduleService.deleteAllEventGames(eventId);
+  }
+  @Delete('games/team/:teamId')
+  deleteAllTeamGames(@Param('teamId') teamId: string, @GetUser() user: User) {
+    this.logger.verbose(
+      `User "${user.username}" is deleting all games for team with id:"${teamId}"`,
+    );
+  }
+
   @Patch('update/:id/score')
   updateMatchScore(
     @Param('id') matchId: string,
     @Body() updateMatchScoreDto: UpdateMatchScoreDto,
-  ): Promise<void> {
+  ): Promise<number[]> {
     this.logger.verbose(
       `Updating score for match ID "${matchId}". Data: ${JSON.stringify(updateMatchScoreDto)}`,
     );
     return this.scheduleService.updateMatchScore(matchId, updateMatchScoreDto);
   }
+
 }
